@@ -101,7 +101,6 @@ ProcessGroupImpl::ProcessGroupImpl(int32_t global_rank,
     hccl_pg_options->global_ranks_in_group = uint32_ranks;
     rank = local_rank;
   }
-  hccl_pg_options->group_id = std::to_string(group_id_++);
   auto store = create_tcp_store(host, port, rank);
   pg_ = std::make_unique<c10d_npu::ProcessGroupHCCL>(
       store, rank, rank_size, hccl_pg_options);
@@ -120,10 +119,7 @@ ProcessGroupImpl::ProcessGroupImpl(int32_t global_rank,
       comm_stream_(c10_npu::getNPUStreamFromPool(device.index())) {
   c10::intrusive_ptr<c10d_npu::ProcessGroupHCCL::Options> hccl_pg_options =
       c10d_npu::ProcessGroupHCCL::Options::create();
-#if TORCH_VERSION_MAJOR > 2 || \
-    (TORCH_VERSION_MAJOR == 2 && TORCH_VERSION_MINOR >= 7)
-  hccl_pg_options->group_name = group_name;
-#endif
+  hccl_pg_options->group_id = group_name;
   if (world_size != rank_size) {
     std::vector<uint32_t> uint32_ranks;
     for (auto rank : group_ranks) {
@@ -149,7 +145,6 @@ ProcessGroupImpl::ProcessGroupImpl(int32_t global_rank,
               << ranks_ss.str();
   }
 
-  hccl_pg_options->group_id = std::to_string(group_id_++);
   auto store = create_tcp_store(host, port, local_rank);
   pg_ = std::make_unique<c10d_npu::ProcessGroupHCCL>(
       store, local_rank, rank_size, hccl_pg_options);
