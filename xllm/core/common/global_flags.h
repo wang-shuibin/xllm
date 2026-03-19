@@ -114,8 +114,6 @@ DECLARE_int32(max_tokens_for_graph_mode);
 
 DECLARE_bool(enable_chunked_prefill);
 
-DECLARE_bool(enable_prefill_sp);
-
 DECLARE_string(master_node_addr);
 
 DECLARE_string(xtensor_master_node_addr);
@@ -230,17 +228,9 @@ DECLARE_int32(max_global_tpot_ms);
 
 DECLARE_int32(max_requests_per_batch);
 
-DECLARE_bool(enable_manual_loader);
-
 DECLARE_bool(enable_xtensor);
 
 DECLARE_int64(phy_page_granularity_size);
-
-// --- rolling load config ---
-DECLARE_bool(enable_rolling_load);
-
-DECLARE_int32(rolling_load_num_cached_layers);
-DECLARE_int32(rolling_load_num_rolling_slots);
 
 // --- beam search config ---
 DECLARE_bool(enable_beam_search_kernel);
@@ -286,13 +276,33 @@ DECLARE_double(dit_cache_residual_diff_threshold);
 
 DECLARE_bool(enable_constrained_decoding);
 
+DECLARE_int64(dit_cache_start_steps);
+
+DECLARE_int64(dit_cache_end_steps);
+
+DECLARE_int64(dit_cache_start_blocks);
+
+DECLARE_int64(dit_cache_end_blocks);
+
+DECLARE_int64(dit_tp_size);
+
+DECLARE_int64(dit_sp_size);
+
+DECLARE_int64(dit_cfg_size);
+
+DECLARE_int64(dit_dp_size);
+
+DECLARE_bool(dit_debug_print);
+
+DECLARE_bool(enable_return_mm_full_embeddings);
+
 // --- multi-step decode config ---
 
 DECLARE_int32(max_decode_rounds);
 
 DECLARE_int32(beam_width);
 
-DECLARE_bool(enable_xattention_one_stage);
+DECLARE_bool(enable_xattention_two_stage_decode);
 
 DECLARE_bool(use_audio_in_video);
 

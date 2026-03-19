@@ -164,10 +164,6 @@ DEFINE_double(prefill_scheduling_memory_usage_threshold,
 
 DEFINE_bool(enable_chunked_prefill, true, "Whether to enable chunked prefill.");
 
-DEFINE_bool(enable_prefill_sp,
-            false,
-            "Whether to enable prefill-only sequence parallel.");
-
 DEFINE_int32(max_tokens_per_chunk_for_prefill,
              -1,
              "Max number of token per chunk in prefill stage.");
@@ -466,37 +462,10 @@ DEFINE_int32(micro_batch_num,
 
 DEFINE_int32(max_requests_per_batch, 1, "Max number of request per batch.");
 
-DEFINE_bool(enable_manual_loader,
-            false,
-            "Pin decoder layer weights to host memory and use async H2D "
-            "transfer. Required by enable_rolling_load; also implied by "
-            "enable_xtensor.");
-
 DEFINE_bool(
     enable_xtensor,
     false,
     "Whether to enable xtensor for model weights with physical page pool.");
-
-// --- rolling load config ---
-
-DEFINE_bool(enable_rolling_load,
-            false,
-            "Enable rolling weight load: keep only N decoder layer weight "
-            "slots in HBM and stream-load each layer just-in-time. "
-            "Requires enable_manual_loader=true. NPU only.");
-
-DEFINE_int32(rolling_load_num_cached_layers,
-             2,
-             "Number of decoder layer weight slots to keep in HBM when "
-             "enable_rolling_load=true.");
-
-DEFINE_int32(rolling_load_num_rolling_slots,
-             -1,
-             "Number of rolling slots used by decoder rolling load. "
-             "Fixed slots are computed as "
-             "rolling_load_num_cached_layers - rolling_load_num_rolling_slots."
-             " -1 means auto (min(2, preload_count)). "
-             "Must be in [-1, rolling_load_num_cached_layers].");
 
 DEFINE_int64(
     phy_page_granularity_size,
@@ -583,7 +552,7 @@ DEFINE_int32(random_seed, -1, "Random seed for random number generator.");
 DEFINE_string(dit_cache_policy,
               "TaylorSeer",
               "The policy of dit cache(e.g. None, FBCache, TaylorSeer, "
-              "FBCacheTaylorSeer).");
+              "FBCacheTaylorSeer, ResidualCache).");
 
 DEFINE_int64(dit_cache_warmup_steps, 0, "The number of warmup steps.");
 
@@ -604,6 +573,48 @@ DEFINE_bool(enable_constrained_decoding,
             "Whether to enable constrained decoding, which is used to ensure "
             "that the output meets specific format or structural requirements "
             "through pre-defined rules.");
+
+DEFINE_int64(dit_cache_start_steps,
+             5,
+             "The number of steps to skip at the start");
+
+DEFINE_int64(dit_cache_end_steps, 5, "The number of steps to skip at the end.");
+
+DEFINE_int64(dit_cache_start_blocks,
+             5,
+             "The number of blocks to skip at the start.");
+
+DEFINE_int64(dit_cache_end_blocks,
+             5,
+             "The number of blocks to skip at the end.");
+
+// --- dit parallel config ---
+
+DEFINE_int64(dit_dp_size, 1, "Data parallelism size for DiT models.");
+
+DEFINE_int64(dit_tp_size, 1, "Tensor parallelism size for DiT models");
+
+DEFINE_int64(dit_sp_size, 1, "Sequence parallelism size for DiT models");
+
+DEFINE_int64(dit_cfg_size,
+             1,
+             "Classifier-free guidiance parallelism size for DiT models");
+
+DEFINE_int64(dit_sp_communication_overlap,
+             1,
+             "Communication & Computation overlap for sequence parallel");
+
+// --- dit debug ---
+
+DEFINE_bool(dit_debug_print,
+            false,
+            "whether print the debug info for dit models");
+
+// --- embedding type ---
+
+DEFINE_bool(enable_return_mm_full_embeddings,
+            false,
+            "return vit and sequence embeddings for vlm models");
 
 DEFINE_bool(
     use_audio_in_video,
@@ -644,7 +655,6 @@ DEFINE_int32(health_check_interval_ms,
              3000,
              "Worker health check interval in milliseconds.");
 
-DEFINE_bool(enable_xattention_one_stage,
+DEFINE_bool(enable_xattention_two_stage_decode,
             false,
-            "Whether to force xattention one-stage decode for rec "
-            "multi-round mode.");
+            "Whether to enable xattention two stage decode.");

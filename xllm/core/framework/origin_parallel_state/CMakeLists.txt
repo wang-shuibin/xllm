@@ -6,8 +6,6 @@ cc_library(
     parallel_state
   HDRS
     mapping_npu.h
-    dit_mapping_npu.h
-    rank_generator.h
     parallel_args.h
     parallel_state.h
     process_group.h
@@ -16,24 +14,22 @@ cc_library(
     $<$<BOOL:${USE_MUSA}>:musa_process_group.h>
     $<$<BOOL:${USE_CUDA}>:cuda_process_group.h>
     $<$<BOOL:${USE_ILU}>:ilu_process_group.h>
-    collective_communicator_base.h
     collective_communicator.h
-    dit_collective_communicator.h
   SRCS
     mapping_npu.cpp
-    dit_mapping_npu.cpp
     parallel_state.cpp
     parallel_state_async.cpp
     process_group.cpp
     $<$<BOOL:${USE_NPU}>:npu_process_group.cpp>
     collective_communicator.cpp
-    dit_collective_communicator.cpp
   DEPS
     :common
     torch
     $<$<BOOL:${USE_MLU}>:torch_mlu>
     $<$<BOOL:${USE_MUSA}>:torch_musa>
+    $<$<BOOL:${USE_NPU}>:torch_npu>
     $<$<BOOL:${USE_NPU}>:hccl>
+    $<$<BOOL:${USE_NPU}>:hcomm>
     $<$<BOOL:${USE_NPU}>:xllm_atb_layers>
     glog::glog
 )

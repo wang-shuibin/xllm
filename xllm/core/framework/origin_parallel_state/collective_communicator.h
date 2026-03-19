@@ -15,11 +15,15 @@ limitations under the License.
 
 #pragma once
 
-#include "collective_communicator_base.h"
+#include <memory>
+#include <string>
+
+#include "parallel_args.h"
+#include "process_group.h"
 
 namespace xllm {
 
-class CollectiveCommunicator : public CollectiveCommunicatorBase {
+class CollectiveCommunicator {
  public:
   CollectiveCommunicator(int global_rank,
                          int world_size,
@@ -28,10 +32,10 @@ class CollectiveCommunicator : public CollectiveCommunicatorBase {
   ~CollectiveCommunicator() = default;
 
   void create_process_groups(const std::string& master_addr,
-                             const torch::Device& device) override;
+                             const torch::Device& device);
 
   // init communicator and return parallel args.
-  const ParallelArgs* parallel_args() override;
+  const ParallelArgs* parallel_args();
 
  private:
   std::unique_ptr<ParallelArgs> parallel_args_;
