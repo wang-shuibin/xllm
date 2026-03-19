@@ -19,9 +19,9 @@ limitations under the License.
 #include <torch_npu/csrc/core/npu/NPUEvent.h>
 #include <torch_npu/csrc/core/npu/NPUStream.h>
 
+#include "core/common/global_flags.h"
 #include "hccl/hccl.h"
 #include "process_group.h"
-#include "core/common/global_flags.h"
 
 namespace xllm {
 

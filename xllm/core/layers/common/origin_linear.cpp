@@ -13,14 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "linear.h"
-
 #include <glog/logging.h>
 #include <torch/torch.h>
 
 #include "framework/parallel_state/parallel_args.h"
 #include "framework/parallel_state/parallel_state.h"
 #include "kernels/ops_api.h"
+#include "linear.h"
 
 namespace xllm {
 namespace layer {

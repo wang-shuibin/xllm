@@ -18,12 +18,11 @@ limitations under the License.
 #include <glog/logging.h>
 #include <torch/torch.h>
 
+#include "core/framework/state_dict/utils.h"
+#include "core/layers/common/add_matmul.h"
 #include "core/layers/common/linear.h"
 #include "framework/parallel_state/parallel_args.h"
 #include "framework/parallel_state/parallel_state.h"
-#include "core/framework/state_dict/utils.h"
-#include "core/layers/common/add_matmul.h"
-
 #include "kernels/ops_api.h"
 
 namespace xllm {
