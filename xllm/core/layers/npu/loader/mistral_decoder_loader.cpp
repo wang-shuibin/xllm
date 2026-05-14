@@ -140,18 +140,9 @@ void MistralDecoderLoader::merge_loaded_weights() {
 void MistralDecoderLoader::load_state_dict(const StateDict& state_dict) {
   for (const auto& [index, name] : WEIGHT_MAPPING) {
     auto original_tensor = state_dict.get_tensor(name);
-    if (original_tensor.defined()) {
-      LOG(INFO) << "Original weight - name: " << name << ", index: " << index
-                << ", shape: [" << original_tensor.sizes() << "]";
-    }
 
     if (WEIGHT_SHARD.find(index) != WEIGHT_SHARD.end()) {
       set_weight(state_dict, name, index, WEIGHT_SHARD[index]);
-
-      if (at_weight_tensors_[index].defined()) {
-        LOG(INFO) << "After sharding - name: " << name << ", index: " << index
-                  << ", shape: [" << at_weight_tensors_[index].sizes() << "]";
-      }
     } else {
       set_weight(state_dict, name, index);
     }

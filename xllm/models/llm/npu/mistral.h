@@ -238,7 +238,7 @@ class MistralModelImpl : public torch::nn::Module {
           break;
         }
       }
-      // 创建 causal mask [seq_len, seq_len]
+      // Create causal mask [seq_len, seq_len]
       auto causal = torch::zeros({seq_len, seq_len}, opts);
       auto upper = torch::ones({seq_len, seq_len}, opts);
       upper.triu_(1);
@@ -254,14 +254,11 @@ class MistralModelImpl : public torch::nn::Module {
 
     std::vector<torch::Tensor> all_layer_hidden_states;
     all_layer_hidden_states.reserve(layers_.size());
-    LOG(INFO) << "layers_.size()" << layers_.size();
+
     for (size_t i = 0; i < layers_.size(); i++) {
       auto& layer = layers_[i];
       layer(h, cos_pos, sin_pos, attn_mask, kv_caches[i], input_params_new, i);
-      torch::save(h,
-                  "/export/home/weinan5/wangshuibin/10_new_flux2_tp_xllm/"
-                  "dump_flux2_tensor/12_cpp_mistral_decoder_layer_tensor/12_" +
-                      std::to_string(i + 1) + "_mistral3_decoder_layer.pt");
+
       all_layer_hidden_states.emplace_back(
           h.clone());  // Collect the output of each layer
     }
@@ -510,7 +507,8 @@ REGISTER_MODEL_ARGS(mistral, [&] {
   LOAD_ARG_OR(rope_scaling_mscale, "rope_scaling_mscale", 1.0f);
   LOAD_ARG_OR(rope_scaling_mscale_all_dim, "rope_scaling_mscale_all_dim", 1.0f);
 
-  // head_dim 需要根据 hidden_size 和 n_heads 计算，必须使用 LOAD_ARG_OR_FUNC
+  // head_dim needs to be calculated from hidden_size and n_heads, must use
+  // LOAD_ARG_OR_FUNC
   LOAD_ARG_OR_FUNC(head_dim, "head_dim", [&] {
     return args->hidden_size() / args->n_heads();
   });

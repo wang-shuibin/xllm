@@ -110,10 +110,7 @@ class Mistral3ForConditionalGenerationImpl : public torch::nn::Module {
                        .to(model_output.aux_hidden_states.device());
     auto selected =
         model_output.aux_hidden_states.index_select(/*dim=*/0, indices);
-    torch::save(selected,
-                "/export/home/weinan5/wangshuibin/10_new_flux2_tp_xllm/"
-                "dump_flux2_tensor/11_cpp_mistral_tensor/"
-                "11_05_cpp_mistral3_prompt_embedding_modelout.pt");
+
     return ModelOutput(selected);
   }
 
