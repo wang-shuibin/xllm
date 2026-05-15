@@ -43,13 +43,13 @@ limitations under the License.
 namespace xllm {
 namespace layer {
 
-class NpuMistralDecoderLayerImpl : public BaseLayer {
+class NpuMistralDecoderLayerImpl final : public BaseLayer {
  public:
   explicit NpuMistralDecoderLayerImpl(const ModelContext& context);
 
   ~NpuMistralDecoderLayerImpl() override = default;
 
-  virtual void merge_loaded_weights() override;
+  void merge_loaded_weights() override;
 
   virtual int64_t init_layer() override;
 

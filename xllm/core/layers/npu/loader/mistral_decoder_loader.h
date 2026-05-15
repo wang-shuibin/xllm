@@ -23,7 +23,7 @@ limitations under the License.
 namespace xllm {
 namespace layer {
 
-class MistralDecoderLoader : public BaseLoader {
+class MistralDecoderLoader final : public BaseLoader {
  public:
   MistralDecoderLoader(uint64_t weight_count, const ModelContext& context);
 
@@ -32,7 +32,7 @@ class MistralDecoderLoader : public BaseLoader {
   void merge_loaded_weights() override;
 
   bool enableAddNorm_;
-  int rank_id_;
+  int32_t rank_id_;
 };
 
 }  // namespace layer

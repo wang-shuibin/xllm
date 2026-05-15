@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "mistral_decoder_loader.h"
+#include "core/layers/npu/loader/mistral_decoder_loader.h"
 
 namespace xllm {
 namespace layer {

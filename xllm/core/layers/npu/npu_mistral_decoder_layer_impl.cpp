@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "npu_mistral_decoder_layer_impl.h"
+#include "core/layers/npu/npu_mistral_decoder_layer_impl.h"
 
 #include <glog/logging.h>
 #include <mstx/ms_tools_ext.h>
@@ -29,7 +29,7 @@ limitations under the License.
 namespace xllm {
 namespace layer {
 
-const uint64_t WEIGHT_COUNT_PER_LAYER = 50;
+const uint64_t kWeightCountPerLayer = 50;
 
 NpuMistralDecoderLayerImpl::NpuMistralDecoderLayerImpl(
     const ModelContext& context)
@@ -43,7 +43,7 @@ NpuMistralDecoderLayerImpl::NpuMistralDecoderLayerImpl(
                   context.get_parallel_args(),
                   false);
 
-  atb_weight_tensors_.resize(WEIGHT_COUNT_PER_LAYER);
+  atb_weight_tensors_.resize(kWeightCountPerLayer);
   placeholder_vec_ = {1};
 
   auto options = context.get_tensor_options();
@@ -53,7 +53,7 @@ NpuMistralDecoderLayerImpl::NpuMistralDecoderLayerImpl(
       torch::zeros({1}).to(device_).to(dtype_));
 
   loader_ =
-      std::make_unique<MistralDecoderLoader>(WEIGHT_COUNT_PER_LAYER, context);
+      std::make_unique<MistralDecoderLoader>(kWeightCountPerLayer, context);
   at_placeholder_ = torch::zeros({1}).to(device_).to(dtype_);
 }
 
@@ -116,7 +116,7 @@ void NpuMistralDecoderLayerImpl::merge_loaded_weights() {
 
   auto& at_weight_tensors = loader_->get_at_weight_tensors();
   Device::empty_cache(device_.index());
-  for (int i = 0; i < WEIGHT_COUNT_PER_LAYER; ++i) {
+  for (int i = 0; i < kWeightCountPerLayer; ++i) {
     atb_weight_tensors_[i] =
         atb_speed::Utils::AtTensor2Tensor(at_weight_tensors[i]);
   }
@@ -161,7 +161,7 @@ int64_t NpuMistralDecoderLayerImpl::init_node(
   node.outTensors.resize(1);
   size_t inTensorId = 1;
 
-  for (size_t weightTensorId = 0; weightTensorId < WEIGHT_COUNT_PER_LAYER;
+  for (size_t weightTensorId = 0; weightTensorId < kWeightCountPerLayer;
        ++weightTensorId) {
     node.inTensors.at(weightTensorId) = &atb_weight_tensors_[weightTensorId];
   }
@@ -224,36 +224,36 @@ void NpuMistralDecoderLayerImpl::build_node_variant_pack(
     ModelInputParams& input_params,
     bool is_prefill) {
   internal_tensors_ = atb_speed::Utils::AtTensor2Tensor(x);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER) = internal_tensors_;
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 1) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer) = internal_tensors_;
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 1) =
       atb_speed::Utils::AtTensor2Tensor(cos_pos);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 2) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 2) =
       atb_speed::Utils::AtTensor2Tensor(sin_pos);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 3) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 3) =
       atb_speed::Utils::AtTensor2Tensor(attn_mask);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 4) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 4) =
       atb_speed::Utils::AtTensor2Tensor(kv_cache.get_k_cache());
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 5) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 5) =
       atb_speed::Utils::AtTensor2Tensor(kv_cache.get_v_cache());
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 6) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 6) =
       atb_speed::Utils::AtTensor2Tensor(input_params.kv_seq_lens);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 6).hostData =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 6).hostData =
       input_params.kv_seq_lens_vec.data();
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 7) = placeholder_;
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 7).hostData =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 7) = placeholder_;
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 7).hostData =
       placeholder_vec_.data();
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 8) = placeholder_;
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 9) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 8) = placeholder_;
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 9) =
       atb_speed::Utils::AtTensor2Tensor(input_params.block_tables);
-  node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 10) =
+  node.variantPack.inTensors.at(kWeightCountPerLayer + 10) =
       atb_speed::Utils::AtTensor2Tensor(input_params.new_cache_slots);
   if (is_prefill && FLAGS_enable_chunked_prefill) {
-    node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 11) =
+    node.variantPack.inTensors.at(kWeightCountPerLayer + 11) =
         atb_speed::Utils::AtTensor2Tensor(input_params.q_seq_lens);
-    node.variantPack.inTensors.at(WEIGHT_COUNT_PER_LAYER + 11).hostData =
+    node.variantPack.inTensors.at(kWeightCountPerLayer + 11).hostData =
         input_params.q_seq_lens_vec.data();
   }
-  for (size_t i = 0; i < WEIGHT_COUNT_PER_LAYER; ++i) {
+  for (size_t i = 0; i < kWeightCountPerLayer; ++i) {
     CHECK_THROW(node.inTensors.at(i) == nullptr,
                 model_name_ << "inTensor " << i << "is NULL");
     node.variantPack.inTensors.at(i) = *node.inTensors.at(i);
