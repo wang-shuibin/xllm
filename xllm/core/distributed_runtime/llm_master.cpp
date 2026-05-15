@@ -312,18 +312,31 @@ std::shared_ptr<Request> LLMMaster::generate_request(
           xllm::ChatJsonParser::get(ServingMode::LLM);
       auto [status, processed_json] = parser.preprocess(prompt);
       if (!status.ok()) {
+        CALLBACK_WITH_ERROR(StatusCode::INVALID_ARGUMENT,
+                            "Preprocess failed: " + status.message(),
+                            sp.service_request_id,
+                            sp.source_xservice_addr);
         LOG(ERROR) << "Preprocess failed: " << status.message();
         return nullptr;
       }
 
       // 2. Parse into Message objects
       std::vector<Message> messages;
-      auto json = nlohmann::json::parse(processed_json);
-      if (json.contains("messages")) {
-        for (const auto& msg : json["messages"]) {
-          messages.emplace_back(msg["role"].get<std::string>(),
-                                msg["content"].get<std::string>());
+      try {
+        auto json = nlohmann::json::parse(processed_json);
+        if (json.contains("messages")) {
+          for (const auto& msg : json["messages"]) {
+            messages.emplace_back(msg["role"].get<std::string>(),
+                                  msg["content"].get<std::string>());
+          }
         }
+      } catch (const nlohmann::json::exception& e) {
+        CALLBACK_WITH_ERROR(StatusCode::INVALID_ARGUMENT,
+                            "JSON parse failed: " + std::string(e.what()),
+                            sp.service_request_id,
+                            sp.source_xservice_addr);
+        LOG(ERROR) << "JSON parse failed: " << e.what();
+        return nullptr;
       }
       // 3. Call the message version of generate_request
       Timer timer;
@@ -343,7 +356,7 @@ std::shared_ptr<Request> LLMMaster::generate_request(
       COUNTER_ADD(chat_template_latency_seconds, timer.elapsed_seconds());
 
       prompt = std::move(formatted_prompt.value());
-      prompt_tokens = std::move(prompt_tokens);
+      prompt_tokens = std::nullopt;
     } else {
       // Prompt is already a formatted chat template string, use directly
       LOG(INFO) << "llm_master prompt (already formatted):" << prompt;

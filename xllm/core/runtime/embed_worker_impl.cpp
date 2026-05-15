@@ -97,7 +97,6 @@ std::optional<ForwardOutput> EmbedWorkerImpl::step(const ForwardInput& input) {
         token_start_idx += seq_len;
       }
     }
-    sample_output.mm_embeddings[0].print();
     COUNTER_ADD(execution_latency_seconds_sampling, timer.elapsed_seconds());
 
     // set sample output to output
