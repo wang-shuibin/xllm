@@ -331,6 +331,9 @@ DECLARE_bool(use_audio_in_video);
 // --- concurrent rec worker config ---
 DECLARE_uint32(rec_worker_max_concurrency);
 
+// --- mistral prompt to message config ---
+DECLARE_bool(enable_mistral_prompt_to_message);
+
 #if defined(USE_NPU)
 DECLARE_string(npu_kernel_backend);
 

@@ -695,7 +695,10 @@ DEFINE_uint32(rec_worker_max_concurrency,
               1,
               "Concurrency for rec worker parallel execution. Less than or "
               "equal to 1 means disable concurrent rec worker.");
-
+// --- mistral prompt to message config ---
+DEFINE_bool(enable_mistral_prompt_to_message,
+            false,
+            "return mistral prompt to message for llm models");
 #if defined(USE_NPU)
 DEFINE_string(npu_kernel_backend,
               "AUTO",
