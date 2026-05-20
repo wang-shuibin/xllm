@@ -87,7 +87,7 @@ std::optional<ForwardOutput> EmbedWorkerImpl::step(const ForwardInput& input) {
         model_->pooler(hidden_states, sampling_params.selected_token_idxes);
     sample_output.embeddings = embeddings;
     if (FLAGS_enable_return_mm_full_embeddings) {
-      auto q_seq_len_vec = input.input_params.q_seq_lens_vec;
+      auto q_seq_len_vec = input.input_params.attention.host.q_seq_lens;
       sample_output.mm_embeddings.reserve(q_seq_len_vec.size());
       int32_t token_start_idx = 0;
       for (auto seq_len : q_seq_len_vec) {

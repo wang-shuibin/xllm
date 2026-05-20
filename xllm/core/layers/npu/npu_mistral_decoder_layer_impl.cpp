@@ -184,7 +184,7 @@ torch::Tensor NpuMistralDecoderLayerImpl::forward(
     int node_id) {
   atb::Status st;
 
-  if (!input_params.batch_forward_type.is_decode()) {
+  if (!input_params.meta.batch_forward_type.is_decode()) {
     build_node_variant_pack(prefill_node_,
                             x,
                             cos_pos,
@@ -236,22 +236,26 @@ void NpuMistralDecoderLayerImpl::build_node_variant_pack(
   node.variantPack.inTensors.at(kWeightCountPerLayer + 5) =
       atb_speed::Utils::AtTensor2Tensor(kv_cache.get_v_cache());
   node.variantPack.inTensors.at(kWeightCountPerLayer + 6) =
-      atb_speed::Utils::AtTensor2Tensor(input_params.kv_seq_lens);
+      atb_speed::Utils::AtTensor2Tensor(
+          input_params.attention.device.kv_seq_lens);
   node.variantPack.inTensors.at(kWeightCountPerLayer + 6).hostData =
-      input_params.kv_seq_lens_vec.data();
+      input_params.attention.host.kv_seq_lens.data();
   node.variantPack.inTensors.at(kWeightCountPerLayer + 7) = placeholder_;
   node.variantPack.inTensors.at(kWeightCountPerLayer + 7).hostData =
       placeholder_vec_.data();
   node.variantPack.inTensors.at(kWeightCountPerLayer + 8) = placeholder_;
   node.variantPack.inTensors.at(kWeightCountPerLayer + 9) =
-      atb_speed::Utils::AtTensor2Tensor(input_params.block_tables);
+      atb_speed::Utils::AtTensor2Tensor(
+          input_params.attention.device.block_tables);
   node.variantPack.inTensors.at(kWeightCountPerLayer + 10) =
-      atb_speed::Utils::AtTensor2Tensor(input_params.new_cache_slots);
+      atb_speed::Utils::AtTensor2Tensor(
+          input_params.attention.device.new_cache_slots);
   if (is_prefill && FLAGS_enable_chunked_prefill) {
     node.variantPack.inTensors.at(kWeightCountPerLayer + 11) =
-        atb_speed::Utils::AtTensor2Tensor(input_params.q_seq_lens);
+        atb_speed::Utils::AtTensor2Tensor(
+            input_params.attention.device.q_seq_lens);
     node.variantPack.inTensors.at(kWeightCountPerLayer + 11).hostData =
-        input_params.q_seq_lens_vec.data();
+        input_params.attention.host.q_seq_lens.data();
   }
   for (size_t i = 0; i < kWeightCountPerLayer; ++i) {
     CHECK_THROW(node.inTensors.at(i) == nullptr,

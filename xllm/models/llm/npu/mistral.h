@@ -189,7 +189,8 @@ class MistralModelImpl : public torch::nn::Module {
     auto sin_pos = sin_pos_.index_select(0, positions);
     ModelInputParams& input_params_new =
         const_cast<ModelInputParams&>(input_params);
-    torch::Tensor max_of_seq = torch::max(input_params.kv_seq_lens);
+    torch::Tensor max_of_seq =
+        torch::max(input_params.attention.device.kv_seq_lens);
     max_seq_len_ = FLAGS_enable_chunked_prefill
                        ? std::max(max_of_seq.item<int>(), max_seq_len_)
                        : 128;
@@ -201,23 +202,23 @@ class MistralModelImpl : public torch::nn::Module {
           << "Flux2 text encoder (Mistral) does not support chunked_prefill. "
           << "Please set --enable_chunked_prefill=false and restart.";
       // Use the original logic
-      int max_kv_seq = input_params.kv_max_seq_len;
-      int num_sequences = input_params.num_sequences;
+      int max_kv_seq = input_params.meta.kv_max_seq_len;
+      int num_sequences = input_params.meta.num_sequences;
       if (num_sequences > 0) {
         std::vector<torch::Tensor> req_mask_vec;
         req_mask_vec.reserve(num_sequences);
         for (int j = 0; j < num_sequences; j++) {
-          auto mask =
-              attn_mask_.gen_append_mask(input_params.q_seq_lens_vec[j],
-                                         input_params.kv_seq_lens_vec[j],
-                                         max_kv_seq,
-                                         cos_pos.dtype().toScalarType(),
-                                         cos_pos.device());
+          auto mask = attn_mask_.gen_append_mask(
+              input_params.attention.host.q_seq_lens[j],
+              input_params.attention.host.kv_seq_lens[j],
+              max_kv_seq,
+              cos_pos.dtype().toScalarType(),
+              cos_pos.device());
           req_mask_vec.emplace_back(mask);
         }
         attn_mask = torch::cat(req_mask_vec, 0);
       }
-    } else if (input_params.batch_forward_type.is_prefill()) {
+    } else if (input_params.meta.batch_forward_type.is_prefill()) {
       int64_t seq_len = h.size(0);
       bool is_bf16 = (cos_pos.scalar_type() == torch::kBFloat16);
       // float min_dtype = is_bf16 ? -3.389538e+38f : -65504.0f;
