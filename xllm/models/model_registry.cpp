@@ -22,6 +22,7 @@ limitations under the License.
 #include <unordered_set>
 
 #include "core/common/global_flags.h"
+#include "core/framework/config/kernel_config.h"
 #include "models.h"
 
 namespace {
@@ -109,8 +110,8 @@ bool resolve_model_registration(const std::string& model_type,
   if (backend == kAutoBackend) {
     effective_backend =
         is_torch_only_model_type(model_type) ? kTorchBackend : kAtbBackend;
-  } else if (model_type == "qwen3") {
-    // qwen3 supports both backends.
+  } else if (model_type == "qwen3" || model_type == "qwen3_moe") {
+    // qwen3/qwen3_moe support both backends.
   } else if (is_torch_only_model_type(model_type)) {
     if (backend != kTorchBackend) {
       if (error_message != nullptr) {
@@ -130,9 +131,13 @@ bool resolve_model_registration(const std::string& model_type,
   if (effective_npu_kernel_backend != nullptr) {
     *effective_npu_kernel_backend = effective_backend;
   }
-  *resolved_name = (model_type == "qwen3" && effective_backend == kAtbBackend)
-                       ? "qwen3_atb"
-                       : model_type;
+  if (model_type == "qwen3" && effective_backend == kAtbBackend) {
+    *resolved_name = "qwen3_atb";
+  } else if (model_type == "qwen3_moe" && effective_backend == kAtbBackend) {
+    *resolved_name = "qwen3_moe_atb";
+  } else {
+    *resolved_name = model_type;
+  }
   return true;
 #else
   *resolved_name = model_type;
@@ -144,11 +149,12 @@ bool resolve_model_registration_name(const std::string& model_type,
                                      std::string* resolved_name,
                                      std::string* error_message) {
 #if defined(USE_NPU)
-  return resolve_model_registration(model_type,
-                                    FLAGS_npu_kernel_backend,
-                                    nullptr,
-                                    resolved_name,
-                                    error_message);
+  return resolve_model_registration(
+      model_type,
+      ::xllm::KernelConfig::get_instance().npu_kernel_backend(),
+      nullptr,
+      resolved_name,
+      error_message);
 #else
   return resolve_model_registration(
       model_type, "", nullptr, resolved_name, error_message);

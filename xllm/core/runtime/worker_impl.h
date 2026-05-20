@@ -83,7 +83,7 @@ class WorkerImpl {
   virtual bool allocate_kv_cache_with_transfer(
       const KVCacheShape& kv_cache_shape);
 
-#if defined(USE_NPU)
+#if defined(USE_NPU) || defined(USE_MLU)
   virtual bool allocate_kv_cache_with_transfer(
       std::shared_ptr<KVCacheTransfer> kv_cache_transfer,
       const KVCacheShape& kv_cache_shape);
@@ -202,6 +202,9 @@ class WorkerImpl {
   void prepare_mla_prefixcache_inputs(ModelInputParams& input_params);
 
   void init_hierarchy_kv_cache_transfer();
+
+  bool allocate_kv_cache_storage(const KVCacheShape& kv_cache_shape,
+                                 bool use_huge_page_allocator = false);
 
   // Get the effective number of layers based on whether this is a spec draft
   // model

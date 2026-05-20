@@ -154,6 +154,23 @@ torch::Tensor npu_recurrent_gated_delta_rule(
     const std::optional<torch::Tensor>& g,
     const std::optional<torch::Tensor>& gk);
 
+std::tuple<torch::Tensor,
+           torch::Tensor,
+           torch::Tensor,
+           torch::Tensor,
+           std::optional<torch::Tensor>,
+           std::optional<torch::Tensor>>
+w4a8_dynamic_moe_preprocess(
+    const torch::Tensor& w13_weight,
+    const torch::Tensor& w2_weight,
+    const torch::Tensor& w13_weight_scale,
+    const torch::Tensor& w2_weight_scale,
+    const std::optional<torch::Tensor>& w13_weight_scale_second,
+    const std::optional<torch::Tensor>& w2_weight_scale_second,
+    const std::optional<torch::Tensor>& w13_scale_bias,
+    const std::optional<torch::Tensor>& w2_scale_bias,
+    int64_t group_size);
+
 std::tuple<torch::Tensor, torch::Tensor> rec_constrained_topk(
     const torch::Tensor& logits,
     const torch::Tensor& sequence_group,
@@ -168,4 +185,16 @@ std::tuple<torch::Tensor, torch::Tensor> rec_constrained_topk(
     int64_t top_k,
     int64_t max_prefix1_degree,
     int64_t max_prefix2_degree);
+
+torch::Tensor causal_conv1d(const torch::Tensor& x,
+                            const torch::Tensor& weight,
+                            const torch::Tensor& conv_state,
+                            const std::optional<torch::Tensor>& bias_opt,
+                            const torch::IntArrayRef query_start_loc_opt,
+                            const torch::IntArrayRef cache_indices_opt,
+                            const torch::IntArrayRef initial_state_mode_opt,
+                            const torch::IntArrayRef num_accepted_tokens_opt,
+                            int64_t activation_mode,
+                            int64_t pad_slot_id,
+                            int64_t run_mode);
 }  // namespace xllm::kernel::npu
