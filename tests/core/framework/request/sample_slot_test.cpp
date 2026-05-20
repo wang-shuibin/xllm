@@ -24,7 +24,7 @@ limitations under the License.
 #include <string_view>
 #include <vector>
 
-#include "common/global_flags.h"
+#include "core/framework/config/rec_config.h"
 #include "framework/block/block_manager_impl.h"
 #include "platform/device.h"
 #include "request.h"
@@ -37,7 +37,8 @@ class CharTokenizer final : public Tokenizer {
  public:
   bool encode(const std::string_view& text,
               std::vector<int32_t>* ids,
-              bool add_special_tokens = true) const override {
+              bool add_special_tokens = true,
+              int32_t max_sequence_length = 0) const override {
     if (ids == nullptr) {
       return false;
     }
@@ -138,7 +139,8 @@ class UnstableLiteralTokenizer final : public Tokenizer {
  public:
   bool encode(const std::string_view& text,
               std::vector<int32_t>* ids,
-              bool add_special_tokens = true) const override {
+              bool add_special_tokens = true,
+              int32_t max_sequence_length = 0) const override {
     if (ids == nullptr) {
       return false;
     }
@@ -360,10 +362,10 @@ TEST(SampleSlotTest, RequestOutputStableSortsOutOfOrderSampleIds) {
 }
 
 TEST(SampleSlotTest, OneRecOutputCarriesTokenLogprobsWhenEnabled) {
-  ScopedBoolFlag enable_output_sku_logprobs(&FLAGS_enable_output_sku_logprobs,
-                                            true);
+  ScopedBoolFlag enable_output_sku_logprobs(
+      &RecConfig::get_instance().enable_output_sku_logprobs(), true);
   ScopedBoolFlag enable_convert_tokens_to_item(
-      &FLAGS_enable_convert_tokens_to_item, false);
+      &RecConfig::get_instance().enable_convert_tokens_to_item(), false);
 
   CharTokenizer tokenizer;
   RequestSamplingParam sampling_param;
